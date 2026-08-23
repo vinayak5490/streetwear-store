@@ -1,9 +1,17 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/lib/products";
+import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 
-export default function Home() {
+export default async function Home() {
+  const products = await prisma.product.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 6,
+  });
+
   return (
     <>
       <Navbar />
@@ -23,19 +31,23 @@ export default function Home() {
               </h2>
             </div>
 
-            <a
+            <Link
               href="/products"
               className="hidden text-sm font-medium text-neutral-400 transition hover:text-white sm:block"
             >
               View all →
-            </a>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (
               <ProductCard
                 key={product.id}
-                product={product}
+                product={{
+                  ...product,
+                  price: Number(product.price),
+                  image: product.images[0],
+                }}
               />
             ))}
           </div>
