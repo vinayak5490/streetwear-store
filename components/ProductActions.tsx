@@ -9,7 +9,7 @@ type ProductActionsProps = {
     product: {
         id: string;
         name: string;
-        price: string;
+        price: number;
         images: string[];
         stock: number;
     };
@@ -20,6 +20,9 @@ export default function ProductActions({ product }: ProductActionsProps){
     const addItem = useCart((state) => state.addItem);
 
     const handleAddToCart = () =>{
+        console.log("Clicked Add to cart");
+        console.log("Product:", product);
+        console.log("Selected Size:", selectedSize);
         addItem({
             id: `${product.id}-${selectedSize}`,
             name: `${product.name} (${selectedSize})`,

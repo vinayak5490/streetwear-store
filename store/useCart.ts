@@ -1,9 +1,8 @@
-// store/useCart.ts
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export type CartItem = {
-  id: string; // Dynamic ID format: `${productId}-${selectedSize}`
+  id: string;
   name: string;
   price: number;
   image: string;
@@ -12,9 +11,8 @@ export type CartItem = {
 
 type CartState = {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, "quantity">) => void;
+  addItem: (item: Omit<CartItem, 'quantity'>) => void;
   removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
 };
 
@@ -22,30 +20,22 @@ export const useCart = create<CartState>()(
   persist(
     (set) => ({
       items: [],
-      addItem: (item) =>
+      addItem: (newItem) =>
         set((state) => {
-          const existingIndex = state.items.findIndex((i) => i.id === item.id);
-          if (existingIndex > -1) {
-            const updatedItems = [...state.items];
-            updatedItems[existingIndex].quantity += 1;
-            return { items: updatedItems };
+          const existing = state.items.find((i) => i.id === newItem.id);
+          if (existing) {
+            return {
+              items: state.items.map((i)=>{
+                return i.id === newItem.id ? {...i, quantity: i.quantity+1} : i;
+              })
+            };
           }
-          return { items: [...state.items], quantity: 1 };
+          return { items: [...state.items, { ...newItem, quantity: 1 }] };
         }),
       removeItem: (id) =>
-        set((state) => ({
-          items: state.items.filter((item) => item.id !== id),
-        })),
-      updateQuantity: (id, quantity) =>
-        set((state) => ({
-          items: state.items
-            .map((item) => (item.id === id ? { ...item, quantity } : item))
-            .filter((item) => item.quantity > 0),
-        })),
+        set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
       clearCart: () => set({ items: [] }),
     }),
-    {
-      name: "drip-cart-storage", // Key used in localStorage
-    }
+    { name: 'cart-storage' }
   )
 );
