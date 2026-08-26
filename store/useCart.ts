@@ -14,6 +14,7 @@ type CartState = {
   addItem: (item: Omit<CartItem, 'quantity'>) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
+  updateQuantity: (id: string, quantity: number) => void;
 };
 
 export const useCart = create<CartState>()(
@@ -35,6 +36,11 @@ export const useCart = create<CartState>()(
       removeItem: (id) =>
         set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
       clearCart: () => set({ items: [] }),
+      updateQuantity: (id, quantity) =>
+        set((state) => ({
+          items: state.items.map((item) => (item.id === id ? {...item, quantity}: item))
+          .filter((item) => item.quantity > 0),//only items with quantity more than 0 should be visible
+        })),
     }),
     { name: 'cart-storage' }
   )
