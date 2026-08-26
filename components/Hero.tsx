@@ -5,7 +5,7 @@ export default function Hero() {
     <section className="relative overflow-hidden border-b border-white/10">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.12),transparent_45%)]" />
 
-      <div className="relative mx-auto flex min-h-[680px] max-w-7xl items-center px-6 py-24">
+      <div className="relative mx-auto flex min-h-170 max-w-7xl items-center px-6 py-24">
         <div className="max-w-4xl">
           <p className="mb-6 text-sm font-medium uppercase tracking-[0.3em] text-neutral-500">
             Drop 01 — 2026
