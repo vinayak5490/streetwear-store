@@ -18,6 +18,26 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     0
   );
 
+  const handleCheckout = async () => {
+  try {
+    const response = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items }),
+    });
+
+    const data = await response.json();
+
+    if (data.url) {
+      window.location.href = data.url; // Redirect to Stripe hosted page
+    } else {
+      console.error("Checkout failed:", data.error);
+    }
+  } catch (error) {
+    console.error("Checkout error:", error);
+  }
+};
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -130,13 +150,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     ₹{subtotal.toLocaleString("en-IN")}
                   </span>
                 </div>
-                <Link
-                  href="/checkout"
-                  onClick={onClose}
+                <button
+                  onClick={handleCheckout}
                   className="block w-full rounded-full bg-white py-4 text-center text-xs font-bold uppercase tracking-wider text-black transition hover:bg-neutral-200"
                 >
                   Proceed to Checkout
-                </Link>
+                </button>
               </div>
             )}
           </motion.aside>

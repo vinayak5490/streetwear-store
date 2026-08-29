@@ -1,24 +1,19 @@
-import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
-import { prisma } from '@/app/lib/prisma';
-import nodemailer from 'nodemailer';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion:'2026-07-29.dahlia',
-});
-
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_SERVER_HOST,
-  port: Number(process.env.EMAIL_SERVER_PORT),
-  auth: {
-    user: process.env.EMAIL_SERVER_USER,
-    pass: process.env.EMAIL_SERVER_PASSWORD,
-  },
-});
+// app/api/webhooks/stripe/route.ts
+import { NextResponse } from "next/server";
+import { stripe } from "@/lib/stripe";
+import { prisma } from "@/lib/prisma";
+import Stripe from "stripe";
 
 export async function POST(req: Request) {
   const body = await req.text();
-  const signature = req.headers.get('stripe-signature')!;
+  const signature = req.headers.get("stripe-signature");
+
+  if (!signature) {
+    return NextResponse.json(
+      { error: "Missing stripe-signature header" },
+      { status: 400 }
+    );
+  }
 
   let event: Stripe.Event;
 
@@ -29,46 +24,26 @@ export async function POST(req: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err: any) {
-    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+    console.error(`Webhook signature verification failed: ${err.message}`);
+    return NextResponse.json(
+      { error: `Webhook Error: ${err.message}` },
+      { status: 400 }
+    );
   }
 
-  if (event.type === 'checkout.session.completed') {
+  // Handle successful checkout
+  if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    const cartItems = JSON.parse(session.metadata?.cartItems || '[]');
+    const orderId = session.metadata?.orderId;
 
-    // Run order creation and inventory updates in a Prisma Transaction
-    await prisma.$transaction(async (tx) => {
-      const order = await tx.order.create({
+    if (orderId) {
+      await prisma.order.update({
+        where: { id: orderId },
         data: {
-          customerEmail: session.customer_details?.email || session.customer_email!,
-          total: (session.amount_total || 0) / 100,
-          status: 'PAID',
-          stripeSessionId: session.id,
-          orderItems: {
-            create: cartItems.map((item: any) => ({
-              productId: item.id,
-              quantity: item.quantity,
-              price: item.price,
-            })),
-          },
+          status: "PAID",
         },
       });
-
-      for (const item of cartItems) {
-        await tx.product.update({
-          where: { id: item.id },
-          data: { stock: { decrement: item.quantity } },
-        });
-      }
-    });
-
-    // Dispatch transactional email
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to: session.customer_details?.email!,
-      subject: 'Order Confirmation - DRIP',
-      text: `Thank you for your order! Your payment session ID is ${session.id}.`,
-    });
+    }
   }
 
   return NextResponse.json({ received: true });
