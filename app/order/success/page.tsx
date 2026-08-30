@@ -104,7 +104,7 @@ export default async function OrderSuccessPage({
 
             <div className="mt-10">
                 <Link
-                    href="/products"
+                    href="/"
                     className="inline-block rounded-full bg-white px-8 py-3 text-xs font-bold uppercase tracking-wider text-black transition hover:bg-neutral-200"
                 >
                     Continue Shopping
