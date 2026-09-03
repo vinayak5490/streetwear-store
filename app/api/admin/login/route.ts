@@ -32,6 +32,7 @@ export async function POST(req : Request){
             value: token,
             httpOnly: true,
             secure: process.env.NODE_ENV == "production",
+            // secure: true,
             sameSite: "strict",
             path:"/",
             maxAge: 60 * 60 * 24, //1 day

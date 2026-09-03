@@ -1,6 +1,6 @@
 //middleware.ts
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
 export async function proxy(req: NextRequest){
@@ -29,7 +29,16 @@ export async function proxy(req: NextRequest){
 
         try {
             const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-            await jwtVerify(token, secret);
+
+            const { payload } = await jwtVerify(token, secret);
+
+            //JWT is valid, but make sure the user is actually as ADMIN
+            if(payload.role !== "ADMIN"){
+                const response = NextResponse.redirect(new URL("/admin/login", req.url));
+                response.cookies.delete("admin_token");
+                return response;
+            }
+            //valid JWT + ADMIN role -> allow access
             return NextResponse.next();
         } catch (error) {
             //Invalid/expired token -> redirect to login
