@@ -20,6 +20,7 @@
     "jose": "^6.2.10",
     "jsonwebtoken": "^9.0.3",
     "next": "16.3.1",
+    "next-cloudinary": "^6.18.8",
     "nodemailer": "^9.0.6",
     "pg": "^8.23.0",
     "prisma": "^7.9.1",
