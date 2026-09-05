@@ -13,9 +13,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DRIP - Minimal Streetwear",
-  description: "Minimal streetwear — oversized tees, cargos, hoodies and caps.",
-};
+  title:{
+    default: "DRIP | Minimal Streetwear & Utility Wear",
+    template: "%s | DRIP",
+  },
+  description: "High-performance minimal streetwear featuring oversized silhouettes, utility cargo, and luxury essentials.",
+  openGraph:{
+    title: "DRIP | Minimal Streetwear",
+    description: "Wear your attitude. Minimal Streetwear built for the crowd",
+    siteName: "DRIP",
+    locale: "en_US",
+    type: "website",
+  },
+  robots:{
+    index: true,
+    follow: true,
+  }
+}
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

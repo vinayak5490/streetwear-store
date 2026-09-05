@@ -70,7 +70,15 @@ export default function NewProductPage(){
                         <CldUploadButton
                             uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
                             onSuccess={(result)=>{
-                                setImages((prev) => [...prev, result.info.secure_url]);
+                                const info = result.info;
+                                if (
+                                    typeof info === "object" &&
+                                    info !== null &&
+                                    "secure_url" in info &&
+                                    typeof info.secure_url === "string"
+                                ) {
+                                    setImages((prev) => [...prev, info.secure_url]);
+                                }
                             }}
                             className="rounded-xl border border-dashed border-white/30 px-6 py-3 text-xs font-bold uppercase tracking-wider text-neutral-300 transition hover:border-white"
                         >

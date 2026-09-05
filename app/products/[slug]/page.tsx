@@ -1,4 +1,5 @@
 // app/products/[slug]/page.tsx
+import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import ProductActions from "@/components/ProductActions";
 import { prisma } from "@/lib/prisma";
@@ -9,6 +10,24 @@ export async function generateStaticParams() {
   return products.map((product) => ({ slug: product.slug }));
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await prisma.product.findUnique({ where: { slug } });
+
+  if (!product) return {};
+
+  return {
+    title: product.name,
+    description: product.description || `Buy ${product.name} at DRIP.`,
+    openGraph: {
+      images: [product.images[0] || "/placeholder.jpg"],
+    },
+  };
+}
 type Params = Promise<{ slug: string }>;
 
 export default async function ProductDetailPage({ params }: { params: Params }) {
